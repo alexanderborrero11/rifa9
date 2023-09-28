@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa</title>
+    <style>
+        /* Estilos CSS para el fondo azul */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0074E4; /* Azul */
+            color: white;
+            text-align: center;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1); /* Fondo blanco transparente */
+        }
+        .container h1 {
+            color: #0074E4; /* Color de texto azul */
+        }
+        .container label {
+            display: block;
+        }
+        .container input[type="text"],
+        .container input[type="tel"],
+        .container input[type="email"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rifa</h1>
+        <p>Selecciona un número del 00 al 99:</p>
+        <select id="numeroSeleccionado">
+            <option value="">Selecciona un número</option>
+            <!-- Generar opciones del 00 al 99 -->
+            <script>
+                for (let i = 0; i < 100; i++) {
+                    const option = document.createElement('option');
+                    option.value = i < 10 ? '0' + i : i.toString();
+                    option.textContent = i < 10 ? '0' + i : i.toString();
+                    document.getElementById('numeroSeleccionado').appendChild(option);
+                }
+            </script>
+        </select>
+        <div id="infoUsuario" style="display: none;">
+            <h2>Ingresa tus datos:</h2>
+            <form>
+                <label for="telefono">Número de teléfono:</label>
+                <input type="tel" id="telefono" required><br>
+
+                <label for="correo">Correo electrónico:</label>
+                <input type="email" id="correo" required><br>
+
+                <label for="nombre">Nombre completo:</label>
+                <input type="text" id="nombre" required><br>
+
+                <button type="button" id="pagar">Pagar</button>
+            </form>
+        </div>
+        <div id="mensaje" style="display: none;"></div>
+    </div>
+
+    <script>
+        const numeroSeleccionado = document.getElementById('numeroSeleccionado');
+        const infoUsuario = document.getElementById('infoUsuario');
+        const pagarBtn = document.getElementById('pagar');
+        const mensaje = document.getElementById('mensaje');
+
+        // Función para verificar si el número ha sido bloqueado
+        function numeroBloqueado(numero) {
+            const bloqueo = localStorage.getItem(`bloqueo_${numero}`);
+            if (bloqueo) {
+                const tiempoBloqueo = JSON.parse(bloqueo);
+                const ahora = new Date().getTime();
+                if (ahora - tiempoBloqueo < 24 * 60 * 60 * 1000) {
+                    return true; // El número está bloqueado
+                }
+            }
+            return false; // El número no está bloqueado o ha expirado el bloqueo
+        }
+
+        numeroSeleccionado.addEventListener('change', function () {
+            const numero = numeroSeleccionado.value;
+            if (numero && !numeroBloqueado(numero)) {
+                infoUsuario.style.display = 'block';
+            } else {
+                infoUsuario.style.display = 'none';
+                mensaje.style.display = 'block';
+                mensaje.textContent = 'Este número ya fue seleccionado o está bloqueado. Inténtalo de nuevo más tarde.';
+                setTimeout(() => {
+                    mensaje.style.display = 'none';
+                }, 3000);
+                numeroSeleccionado.value = '';
+            }
+        });
+
+        pagarBtn.addEventListener('click', function () {
+            const numero = numeroSeleccionado.value;
+            const telefono = document.getElementById('telefono').value;
+            const correo = document.getElementById('correo').value;
+            const nombre = document.getElementById('nombre').value;
+
+            // Registrar el número bloqueado en localStorage
+            localStorage.setItem(`bloqueo_${numero}`, JSON.stringify(new Date().getTime()));
+
+            // Redireccionar a la plataforma de pago (cambiar la URL)
+            // window.location.href = 'URL_DE_LA_PLATAFORMA_DE_PAGO';
+
+            // Reiniciar la selección
+            numeroSeleccionado.value = '';
+            infoUsuario.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
